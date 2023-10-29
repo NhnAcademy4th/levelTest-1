@@ -28,7 +28,18 @@ public class Iterators {
 
     }
 
+//    public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
+//        String str = reduce(es, (prev, next) -> prev + separator + next, "");
+//        return str.replaceFirst(separator,"");
+//    }
+
     public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
+        String firstValue = "";
+        if (es.hasNext()) {
+            firstValue = (String) es.next();
+        }
+        es.remove();
+        return reduce(es, (prev, next) -> prev + separator + next, firstValue);
     }
 
 
