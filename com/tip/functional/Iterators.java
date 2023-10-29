@@ -104,11 +104,20 @@ public class Iterators {
     }
 
     public static <T> Iterator<T> limit(Iterator<T> iterator, long maxSize) { // TODO
-        int count = 0;
-        return new InfiniteIterator<T>() {
+        return new Iterator<>() {
+            private int count = 0;
+
+            @Override
+            public boolean hasNext() {
+                return count < maxSize && iterator.hasNext();
+            }
 
             @Override
             public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                count++;
                 return iterator.next();
             }
         };
@@ -136,6 +145,7 @@ public class Iterators {
 
     public static <E> long count(Iterator<E> iterator) {
         // TODO: reduce를 써서
+        return reduce(iterator, (sum, value) -> sum + 1, 0);
     }
 
     public static <T> T get(Iterator<T> iterator, long index) {
