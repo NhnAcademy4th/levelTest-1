@@ -1,14 +1,20 @@
 package com.tip.functional.test;
 
+import static com.tip.functional.Iterators.generate;
+import static com.tip.functional.Iterators.get;
+import static com.tip.functional.Iterators.iterate;
+import static com.tip.functional.Iterators.limit;
+import static com.tip.functional.Iterators.map;
+import static com.tip.functional.Iterators.toList;
+import static com.tip.functional.Iterators.zip;
+
+import com.tip.Mathx;
+import com.tip.functional.Experiments;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import com.tip.Mathx;
-import static com.tip.functional.Iterators.*;
-import com.tip.functional.Experiments;
 
 enum Quality {
     BEST, GOOD, REGULAR, POOR;
@@ -24,12 +30,12 @@ public class MonteCarloTest {
          * 참 거짓을 답하는 함수(실험)를 n 번 시행하고 참이 나온 횟수를 n으로 나눕니다.
          */
         BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n,
-                experiment) -> Mathx.sum(limit(map(generate(experiment), binary -> binary), n)) / n;
+                                                                  experiment) ->
+                Mathx.sum(limit(map(generate(experiment), binary -> binary), n)) / n;
 
         /*
          * 몬테카를로 방식으로 값을 어림잡을 수 있습니다. 두 마구잡이 수가 서로 소인지 알아보는 함수 Mathx.dirichletTest를 씁니다.
          */
-
         System.out.println(
                 Math.sqrt(6.0 / monteCarlo.apply(100_000L, () -> Mathx.dirichletTest() ? 1 : 0)));
 
@@ -38,16 +44,18 @@ public class MonteCarloTest {
          * 자원 문제를 계산 방법으로부터 격리할 수 있습니다.
          */
 
-        // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
-        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator =
+        // TODO: Iterators.{iterate, zip}을 써서 코드 채우기 ✅
+        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment -> zip(
+                (sum, count) -> sum * 1.0 / count,
+                iterate(0L, t -> t + experiment.get()),
+                iterate(1L, t -> t + 1));
 
         /*
          *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
          */
-
         Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
                 ratio -> Math.sqrt(6.0 / ratio));
-        System.out.println(get(pi, 100_1000));
+        System.out.println(get(pi, 100_000L));
     }
 
     private static void potionTestWithInfiniteIterators() {
@@ -76,8 +84,8 @@ public class MonteCarloTest {
          */
         Iterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
         // TODO 아래 주석을 제거하고 첫 번째 인자 채우기
-        // Iterator<Quality> herbQualities = zip(
-        // , herbAvailablities, qualities);
+        Iterator<Quality> herbQualities = zip(
+                null, herbAvailablities, qualities);
 
         EnumMap<Quality, Supplier<Double>> normalDistributions = new EnumMap<>(Quality.class);
         normalDistributions.put(Quality.BEST, () -> Mathx.randDoubleNormallyDistributed(90, 10));
@@ -92,10 +100,12 @@ public class MonteCarloTest {
         /* 약초의 품질에 따른 약물 효과를 마구잡이로 뽑는 함수를 만듭니다. 약물 효과는 0에서 100사이 값이므로 이 범위를 넘는 값을 잘라냅니다. */
         Iterator<Double> medicineEffects = map(herbQualities, quality -> {
             double effect = normalDistributions.get(quality).get();
-            if (effect < 0)
+            if (effect < 0) {
                 return 0D;
-            if (effect > 100)
+            }
+            if (effect > 100) {
                 return 100D;
+            }
             return effect;
         });
 
@@ -152,10 +162,12 @@ public class MonteCarloTest {
 
         Iterator<Double> medicineEffects = map(herbQualities, quality -> {
             double effect = normalDistributions.get(Quality.values()[quality]).next();
-            if (effect < 0)
+            if (effect < 0) {
                 return 0D;
-            if (effect > 100)
+            }
+            if (effect > 100) {
                 return 100D;
+            }
             return effect;
         });
 
