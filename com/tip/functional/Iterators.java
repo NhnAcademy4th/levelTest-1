@@ -7,7 +7,6 @@ import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public class Iterators {
@@ -25,7 +24,7 @@ public class Iterators {
     }
 
     public static <T> boolean equals(Iterator<T> xs, Iterator<T> ys) { // TODO: reduce,zip를 써서
-
+        return reduce(zip(Object::equals, xs, ys), (x, y) -> x && y, true) && (xs.hasNext() == ys.hasNext());
     }
 
 //    public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
@@ -115,7 +114,7 @@ public class Iterators {
             @Override
             public T next() {
                 if (!hasNext()) {
-                    throw new NoSuchElementException();
+                    throw new NoSuchElementException("limit");
                 }
                 count++;
                 return iterator.next();
@@ -123,9 +122,9 @@ public class Iterators {
         };
     }
 
-    public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-
-    }
+//    public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
+//
+//    }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
                                             Iterator<Y> yIterator) {
