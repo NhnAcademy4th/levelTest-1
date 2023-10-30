@@ -6,6 +6,19 @@ public final class Range implements Iterable<Long> {
     private long startInclusive;
     private long endExclusive;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Range longs = (Range) o;
+        return startInclusive == longs.startInclusive && endExclusive == longs.endExclusive;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startInclusive, endExclusive);
+    }
+
     public Range(long startInclusive, long endExclusive) {
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
@@ -13,7 +26,7 @@ public final class Range implements Iterable<Long> {
     }
 
     public Range(long endExclusive) {
-        this(1, endExclusive);
+        this(0, endExclusive);
     }
 
     public static Range closed(long startInclusive, long endInclusive) {

@@ -1,6 +1,7 @@
 package com.tip.functional.test;
 
-import java.util.EnumMap;
+import com.tip.functional.InfiniteIterator;
+import com.tip.functional.Iterators;
 import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -8,7 +9,7 @@ import java.util.function.Supplier;
 
 import com.tip.Mathx;
 import static com.tip.functional.Iterators.*;
-import com.tip.functional.Experiments;
+//import com.tip.functional.Experiments;
 
 enum Quality {
     BEST, GOOD, REGULAR, POOR;
@@ -23,8 +24,7 @@ public class MonteCarloTest {
          *
          * 참 거짓을 답하는 함수(실험)를 n 번 시행하고 참이 나온 횟수를 n으로 나눕니다.
          */
-        BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n,
-                experiment) -> Mathx.sum(limit(map(generate(experiment), binary -> binary), n)) / n;
+        BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n, experiment) -> Mathx.sum(limit(generate(experiment), n)) / n;
 
         /*
          * 몬테카를로 방식으로 값을 어림잡을 수 있습니다. 두 마구잡이 수가 서로 소인지 알아보는 함수 Mathx.dirichletTest를 씁니다.
@@ -39,16 +39,37 @@ public class MonteCarloTest {
          */
 
         // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
-        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator =
+        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment ->
+            zip((count, sum) -> sum / count, iterate(0, x -> x + 1), iterate(1.0, x -> x + experiment.get()));
+//            return new Iterator<Double>() {
+//                private long count = 0;
+//                private double sum = 0.0;
+//
+//                @Override
+//                public boolean hasNext() {
+//                    return true;
+//                }
+//
+//                @Override
+//                public Double next() {
+//                    double value = experiment.get();
+//                    count++;
+//                    sum += value;
+//                    return sum / count;
+//                }
+//            };
 
-        /*
-         *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
-         */
 
-        Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
-                ratio -> Math.sqrt(6.0 / ratio));
-        System.out.println(get(pi, 100_1000));
-    }
+
+            /*
+             *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
+             */
+
+            Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
+                    ratio -> Math.sqrt(6.0 / ratio));
+
+            System.out.println(get(pi, 100000));
+        }
 
     private static void potionTestWithInfiniteIterators() {
         /*
@@ -111,84 +132,84 @@ public class MonteCarloTest {
         toList(limit(medicineEffects, 100));
     }
 
-    private static void potionTestWithExperiments() {
-        /*
-         * 약효 모의 실험은 잘 되지만 실험은 결과 만큼 과정에 대한 정보도 중요합니다. 계산 과정에 쓴 데이터들 곧 약초와 품질, 그에 따른 약물의 품질, 그리고 약효에
-         * 대한 데이터가 될 수 있는 한 상세하게 보고서로 나와야 쓸모있는 실험이 됩니다. Iterator를 쓰는 코드 얼개를 조금도 망가뜨리지 않고 필요한 정보만
-         * 저장했다가 꺼내보는 방법이 필요합니다.
-         *
-         * 계산과 저장을 가능한 하지 않고 미루는 방식과 계산 과정에서 얻은 정보를 적절히 저장하는 두 가지 다른 방식을 한 데 엮어 쓰는 본보기가 됩니다. 문제는 그에
-         * 맞는 풀이 방법이 제 각기 다를 수 있습니다. 굳이 한 가지 방법만을 고집할 필요가 없습니다.
-         */
-
-        /*
-         * 계산 과정에서 얻은 데이터 곧 횟수와 합을 저장하기 때문에 필요할 때 꺼내 쓸 수 있으면서도 InfiniteIterator로 동작하는 Experiments
-         * class를 만들 수 있습니다.
-         *
-         * 코드 구조가 거의 바뀌지 않았습니다. Experiments로 덧 쒸운 코드 말고는 달라진 부분이 거의 없습니다. 하지만 이 번에는 계산 정보를 저장했다가 출력할
-         * 준비가 되어 있습니다.
-         */
-
-        final double herbRatio = 0.2;
-        Experiments<Integer> herbAvailablities = // TODO: Experiments 만들기
-                new Experiments<>(Mathx.binaryDistribution(herbRatio), "herb availabilities",
-                        "binomial distribution");
-
-        Experiments<Integer> herbQualities = new Experiments<>(
-                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : effect,
-                        herbAvailablities, Mathx.discreteUniformDistribution(Quality.class)),
-                "herb qualities", "discrete uniform distribition");
-
-        EnumMap<Quality, Experiments<Double>> normalDistributions = new EnumMap<>(Quality.class);
-        String normalDistribution = "normal distribition";
-        normalDistributions.put(Quality.BEST, new Experiments<>(Mathx.normalDistribution(90, 10),
-                "best effect", normalDistribution));
-        normalDistributions.put(Quality.GOOD, new Experiments<>(Mathx.normalDistribution(80, 20),
-                "good effect", normalDistribution));
-        normalDistributions.put(Quality.REGULAR, new Experiments<>(Mathx.normalDistribution(50, 30),
-                "regular effect", normalDistribution));
-        normalDistributions.put(Quality.POOR, new Experiments<>(Mathx.normalDistribution(30, 40),
-                "poor effect", normalDistribution));
-
-        Iterator<Double> medicineEffects = map(herbQualities, quality -> {
-            double effect = normalDistributions.get(Quality.values()[quality]).next();
-            if (effect < 0)
-                return 0D;
-            if (effect > 100)
-                return 100D;
-            return effect;
-        });
-
-        toList(limit(medicineEffects, 7000)); // 실제 계산은 여기서 일어납니다!!!
-
-        /*
-         * 모든 계산이 마무리되었으므로 계산 결과를 볼 수 있습니다. MonteCarlo 클래스가 없다면 계산 순열을 끝없이 늘어놓는 일과 계산 과정을 기록하는 일, 이
-         * 둘을 한 꾸러미로 묶어내기가 (언제나 그렇듯이 한 방법으로 다른 방법을 완전히 대체하는 할 수 있지만) 무척 번거롭습니다. 문제마다 알맞은 방법을 골라서 서로
-         * 잘 어울리도록 짜 맞추면 프로그램의 얼개가 아주 튼튼해집니다. 성능을 시험하고 고장난 곳을 찾아서 고치기에도 좋은 짜임새를 갖추게 됩니다.
-         *
-         * 좋은 약초를 얻을 확률은 얼마나 될까요?
-         */
-        System.out.println("Herb availability");
-        herbAvailablities.report();
-        System.out.println();
-
-        /* 좋은 약초가 있고 없고에 따른 약재의 품질은 어떤가요? */
-        System.out.println("Herb quality (Excellent = 0, Good = 1, Marginal = 2, Poor = 3): ");
-        herbQualities.report();
-        System.out.println();
-
-        /* 약초 품질에 따른 약물의 효과는 어떻게 분포되나요? */
-        System.out.println("Potion effects by the 4 quality categories: ");
-        for (Quality quality : Quality.values()) {
-            normalDistributions.get(quality).report();
-            System.out.println();
-        }
-    }
+//    private static void potionTestWithExperiments() {
+//        /*
+//         * 약효 모의 실험은 잘 되지만 실험은 결과 만큼 과정에 대한 정보도 중요합니다. 계산 과정에 쓴 데이터들 곧 약초와 품질, 그에 따른 약물의 품질, 그리고 약효에
+//         * 대한 데이터가 될 수 있는 한 상세하게 보고서로 나와야 쓸모있는 실험이 됩니다. Iterator를 쓰는 코드 얼개를 조금도 망가뜨리지 않고 필요한 정보만
+//         * 저장했다가 꺼내보는 방법이 필요합니다.
+//         *
+//         * 계산과 저장을 가능한 하지 않고 미루는 방식과 계산 과정에서 얻은 정보를 적절히 저장하는 두 가지 다른 방식을 한 데 엮어 쓰는 본보기가 됩니다. 문제는 그에
+//         * 맞는 풀이 방법이 제 각기 다를 수 있습니다. 굳이 한 가지 방법만을 고집할 필요가 없습니다.
+//         */
+//
+//        /*
+//         * 계산 과정에서 얻은 데이터 곧 횟수와 합을 저장하기 때문에 필요할 때 꺼내 쓸 수 있으면서도 InfiniteIterator로 동작하는 Experiments
+//         * class를 만들 수 있습니다.
+//         *
+//         * 코드 구조가 거의 바뀌지 않았습니다. Experiments로 덧 쒸운 코드 말고는 달라진 부분이 거의 없습니다. 하지만 이 번에는 계산 정보를 저장했다가 출력할
+//         * 준비가 되어 있습니다.
+//         */
+//
+//        final double herbRatio = 0.2;
+//        Experiments<Integer> herbAvailablities = // TODO: Experiments 만들기
+//                new Experiments<>(Mathx.binaryDistribution(herbRatio), "herb availabilities",
+//                        "binomial distribution");
+//
+//        Experiments<Integer> herbQualities = new Experiments<>(
+//                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : effect,
+//                        herbAvailablities, Mathx.discreteUniformDistribution(Quality.class)),
+//                "herb qualities", "discrete uniform distribition");
+//
+//        EnumMap<Quality, Experiments<Double>> normalDistributions = new EnumMap<>(Quality.class);
+//        String normalDistribution = "normal distribition";
+//        normalDistributions.put(Quality.BEST, new Experiments<>(Mathx.normalDistribution(90, 10),
+//                "best effect", normalDistribution));
+//        normalDistributions.put(Quality.GOOD, new Experiments<>(Mathx.normalDistribution(80, 20),
+//                "good effect", normalDistribution));
+//        normalDistributions.put(Quality.REGULAR, new Experiments<>(Mathx.normalDistribution(50, 30),
+//                "regular effect", normalDistribution));
+//        normalDistributions.put(Quality.POOR, new Experiments<>(Mathx.normalDistribution(30, 40),
+//                "poor effect", normalDistribution));
+//
+//        Iterator<Double> medicineEffects = map(herbQualities, quality -> {
+//            double effect = normalDistributions.get(Quality.values()[quality]).next();
+//            if (effect < 0)
+//                return 0D;
+//            if (effect > 100)
+//                return 100D;
+//            return effect;
+//        });
+//
+//        toList(limit(medicineEffects, 7000)); // 실제 계산은 여기서 일어납니다!!!
+//
+//        /*
+//         * 모든 계산이 마무리되었으므로 계산 결과를 볼 수 있습니다. MonteCarlo 클래스가 없다면 계산 순열을 끝없이 늘어놓는 일과 계산 과정을 기록하는 일, 이
+//         * 둘을 한 꾸러미로 묶어내기가 (언제나 그렇듯이 한 방법으로 다른 방법을 완전히 대체하는 할 수 있지만) 무척 번거롭습니다. 문제마다 알맞은 방법을 골라서 서로
+//         * 잘 어울리도록 짜 맞추면 프로그램의 얼개가 아주 튼튼해집니다. 성능을 시험하고 고장난 곳을 찾아서 고치기에도 좋은 짜임새를 갖추게 됩니다.
+//         *
+//         * 좋은 약초를 얻을 확률은 얼마나 될까요?
+//         */
+//        System.out.println("Herb availability");
+//        herbAvailablities.report();
+//        System.out.println();
+//
+//        /* 좋은 약초가 있고 없고에 따른 약재의 품질은 어떤가요? */
+//        System.out.println("Herb quality (Excellent = 0, Good = 1, Marginal = 2, Poor = 3): ");
+//        herbQualities.report();
+//        System.out.println();
+//
+//        /* 약초 품질에 따른 약물의 효과는 어떻게 분포되나요? */
+//        System.out.println("Potion effects by the 4 quality categories: ");
+//        for (Quality quality : Quality.values()) {
+//            normalDistributions.get(quality).report();
+//            System.out.println();
+//        }
+//    }
 
     public static void main(String[] args) {
-        MonteCarloTest.piDemo();
-        MonteCarloTest.potionTestWithInfiniteIterators();
-        MonteCarloTest.potionTestWithExperiments();
-    }
 
+        MonteCarloTest.piDemo();
+//        MonteCarloTest.potionTestWithInfiniteIterators();
+//        MonteCarloTest.potionTestWithExperiments();
+    }
 }

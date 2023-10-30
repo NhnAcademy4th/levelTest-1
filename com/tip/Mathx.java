@@ -67,7 +67,7 @@ public class Mathx {
     }
 
     public static InfiniteIterator<Integer> discreteUniformDistribution(int origin,
-            int boundInclusive) {
+                                                                        int boundInclusive) {
         return generate(() -> randInt(origin, boundInclusive + 1));
     }
 
@@ -90,7 +90,7 @@ public class Mathx {
     }
 
     public static InfiniteIterator<Double> normalDistribution(double mean,
-            double standardDeviation) {
+                                                              double standardDeviation) {
         return generate(() -> randDoubleNormallyDistributed(mean, standardDeviation));
     }
 
