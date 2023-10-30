@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public class Iterators {
@@ -61,22 +62,38 @@ public class Iterators {
             private E current;
 
             public boolean hasNext() {
-                while (iterator.hasNext()) {
-                    current = iterator.next();
-                    if (predicate.test(current)) {
-                        return true;
-                    }
+                if (current == null) {
+                    current = findFirst(iterator, predicate);
+                    return current != null;
                 }
-                return false;
+                return true;
             }
 
             public E next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("filter");
                 }
-                return current;
+                E old = current;
+                current = findFirst(iterator, predicate);
+                return old;
             }
         };
+    }
+
+    public static void main(String[] args) {
+//        ArrayList<Integer> a = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
+//        Iterator<Integer> iter = a.iterator();
+//        Iterator<Integer> filt = filter(iter, x -> x % 2 == 0);
+//        filt.hasNext();
+//        System.out.println(filt.next());
+//        filt.hasNext();
+//        System.out.println(filt.next());
+//        filt.hasNext();
+//        System.out.println(filt.next());
+//        filt.hasNext();
+//        System.out.println(filt.next());
+//        System.out.println(filt.next());
+
     }
 
     public static <E> E findFirst(Iterator<E> iterator, Predicate<E> predicate) {
@@ -91,7 +108,7 @@ public class Iterators {
 
     public static <T> InfiniteIterator<T> iterate(T seed, UnaryOperator<T> f) {
         return new InfiniteIterator<T>() {
-            T current = seed;
+            public T current = seed;
 
             @Override
             public T next() {
@@ -104,7 +121,7 @@ public class Iterators {
 
     public static <T> Iterator<T> limit(Iterator<T> iterator, long maxSize) { // TODO
         return new Iterator<>() {
-            private int count = 0;
+            private long count = 0;
 
             @Override
             public boolean hasNext() {
@@ -122,9 +139,9 @@ public class Iterators {
         };
     }
 
-//    public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-//
-//    }
+    public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
+
+    }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
                                             Iterator<Y> yIterator) {
