@@ -15,8 +15,6 @@ public class Experiments<T extends Number> implements Iterator<T> {
         this.iterator = iterator;
         this.group = group;
         this.title = title;
-        count = 0L;
-        sum = 0;
     }
 
     public void report() {
