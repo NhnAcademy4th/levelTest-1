@@ -52,20 +52,19 @@ public class Iterators {
             private E current;
 
             public boolean hasNext() {
-                while (iterator.hasNext()) {
-                    current = iterator.next();
-                    if (predicate.test(current)) {
-                        return true;
-                    }
+                if (current == null) {
+                    current = findFirst(iterator, predicate);
                 }
-                return false;
+                return current != null;
             }
 
             public E next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("filter");
                 }
-                return current;
+                E old = current;
+                current = findFirst(iterator, predicate);
+                return old;
             }
         };
     }
