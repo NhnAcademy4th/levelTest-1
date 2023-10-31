@@ -36,9 +36,8 @@ public class Iterators {
     public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
         String firstValue = "";
         if (es.hasNext()) {
-            firstValue = (String) es.next();
+            firstValue = es.next().toString() ;
         }
-        es.remove();
         return reduce(es, (prev, next) -> prev + separator + next, firstValue);
     }
 
@@ -64,9 +63,8 @@ public class Iterators {
             public boolean hasNext() {
                 if (current == null) {
                     current = findFirst(iterator, predicate);
-                    return current != null;
                 }
-                return true;
+                return current != null;
             }
 
             public E next() {
@@ -78,22 +76,6 @@ public class Iterators {
                 return old;
             }
         };
-    }
-
-    public static void main(String[] args) {
-//        ArrayList<Integer> a = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
-//        Iterator<Integer> iter = a.iterator();
-//        Iterator<Integer> filt = filter(iter, x -> x % 2 == 0);
-//        filt.hasNext();
-//        System.out.println(filt.next());
-//        filt.hasNext();
-//        System.out.println(filt.next());
-//        filt.hasNext();
-//        System.out.println(filt.next());
-//        filt.hasNext();
-//        System.out.println(filt.next());
-//        System.out.println(filt.next());
-
     }
 
     public static <E> E findFirst(Iterator<E> iterator, Predicate<E> predicate) {
@@ -125,7 +107,7 @@ public class Iterators {
 
             @Override
             public boolean hasNext() {
-                return count < maxSize && iterator.hasNext();
+                return iterator.hasNext() && (count < maxSize);
             }
 
             @Override
@@ -140,7 +122,7 @@ public class Iterators {
     }
 
     public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-
+        return supplier::get;
     }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
