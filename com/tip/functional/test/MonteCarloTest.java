@@ -29,8 +29,7 @@ public class MonteCarloTest {
          *
          * 참 거짓을 답하는 함수(실험)를 n 번 시행하고 참이 나온 횟수를 n으로 나눕니다.
          */
-        BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n,
-                                                                  experiment) ->
+        BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n, experiment) ->
                 Mathx.sum(limit(map(generate(experiment), binary -> binary), n)) / n;
 
         /*
