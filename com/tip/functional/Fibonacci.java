@@ -6,8 +6,6 @@ public class Fibonacci implements InfiniteIterator<Integer> {
     private int prev;
     private int current;
 
-    private int next;
-
     @Override
     public Integer next() {
         if (current == 0) {
