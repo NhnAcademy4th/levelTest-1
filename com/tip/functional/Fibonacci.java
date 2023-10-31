@@ -2,19 +2,23 @@ package com.tip.functional;
 
 public class Fibonacci implements InfiniteIterator<Integer> {
 
-    private int n;
+    // TODO: 채우기
     private int prev;
-    private int cur;
-    @Override
-    public boolean hasNext() {
-        return false;
-    }
+    private int current;
+
+    private int next;
 
     @Override
     public Integer next() {
-        int temp = prev;
-        prev = cur;
-        return null;
+        if (current == 0) {
+            prev = 1;
+            current = 1;
+            return current;
+        }
+        int tmp = prev;
+        prev = current;
+        current = tmp + current;
+        return prev;
     }
-    // TODO: 채우기
+
 }
