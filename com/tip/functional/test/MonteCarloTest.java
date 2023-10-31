@@ -44,7 +44,7 @@ public class MonteCarloTest {
          * 자원 문제를 계산 방법으로부터 격리할 수 있습니다.
          */
 
-        // TODO: Iterators.{iterate, zip}을 써서 코드 채우기 ✅
+        // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
         Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment -> zip(
                 (sum, count) -> sum * 1.0 / count,
                 iterate(0L, t -> t + experiment.get()),
@@ -84,8 +84,8 @@ public class MonteCarloTest {
          */
         Iterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
         // TODO 아래 주석을 제거하고 첫 번째 인자 채우기
-        Iterator<Quality> herbQualities = zip(
-                null, herbAvailablities, qualities);
+        Iterator<Quality> herbQualities = zip((a, q) -> a == 1 ? Quality.BEST : Quality.values()[q]
+                , herbAvailablities, qualities);
 
         EnumMap<Quality, Supplier<Double>> normalDistributions = new EnumMap<>(Quality.class);
         normalDistributions.put(Quality.BEST, () -> Mathx.randDoubleNormallyDistributed(90, 10));
