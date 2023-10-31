@@ -1,9 +1,6 @@
 package com.tip.functional;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -25,10 +22,17 @@ public class Iterators {
     }
 
     public static <T> boolean equals(Iterator<T> xs, Iterator<T> ys) { // TODO: reduce,zip를 써서
-
+        // TODO: reduce, zip을 써서
+        Iterator<Boolean> equalsIterator = zip((xValue,yValue)-> xValue.equals(yValue) && (xs.hasNext() == ys.hasNext()),xs,ys);
+        return reduce(equalsIterator,(x,y) -> x && y,true);
     }
-
     public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
+        return reduce(es,(acc,element)->{
+            if(acc.isEmpty()){
+                return element.toString();
+            }
+            else return acc + separator + element;
+        },"");
     }
 
 
@@ -49,22 +53,19 @@ public class Iterators {
         // findFirst를 써서 풀기
         return new Iterator<E>() {
             private E current;
-
             public boolean hasNext() {
-                while (iterator.hasNext()) {
-                    current = iterator.next();
-                    if (predicate.test(current)) {
-                        return true;
-                    }
+                if(Objects.isNull(current)){
+                    current = findFirst(iterator,predicate);
                 }
-                return false;
+                return !Objects.isNull(current);
             }
-
             public E next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("filter");
                 }
-                return current;
+                E tmp = current;
+                current = findFirst(iterator,predicate);
+                return tmp;
             }
         };
     }
@@ -84,6 +85,11 @@ public class Iterators {
             T current = seed;
 
             @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
             public T next() {
                 T old = current;
                 current = f.apply(current);
@@ -93,18 +99,34 @@ public class Iterators {
     }
 
     public static <T> Iterator<T> limit(Iterator<T> iterator, long maxSize) { // TODO
-        int count = 0;
-        return new InfiniteIterator<T>() {
+        if(maxSize < 0) throw new IllegalArgumentException(Long.toString(maxSize));
+
+        return new Iterator<T>() {
+            int run = 0;
+            @Override
+            public boolean hasNext() {
+                if(run < maxSize)
+                    return true;
+                return false;
+            }
 
             @Override
             public T next() {
+                if(!hasNext())
+                    throw new NoSuchElementException("limit");
+                run++;
                 return iterator.next();
             }
         };
     }
 
     public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-
+        return new InfiniteIterator<T>() {
+            @Override
+            public T next() {
+                return supplier.get();
+            }
+        };
     }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
@@ -125,6 +147,7 @@ public class Iterators {
 
     public static <E> long count(Iterator<E> iterator) {
         // TODO: reduce를 써서
+        return reduce(iterator,(x,y)->x+1,0);
     }
 
     public static <T> T get(Iterator<T> iterator, long index) {
@@ -177,6 +200,15 @@ public class Iterators {
     private Iterators() {
     }
 
+    public static void main(String[] args) {
+        int[] a = new int[]{
+                1,2,3,4
+        };
+        int[] b = new int[]{
+                1,2,3,4
+        };
+        System.out.println(equals(Arrays.stream(a).iterator(), Arrays.stream(b).iterator()));
+    }
 }
 
 

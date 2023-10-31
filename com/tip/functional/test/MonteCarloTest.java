@@ -1,17 +1,27 @@
 package com.tip.functional.test;
 
+import com.tip.functional.Experiments;
+import com.tip.functional.InfiniteIterator;
+import com.tip.functional.Iterators;
 import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.tip.Mathx;
 import static com.tip.functional.Iterators.*;
-import com.tip.functional.Experiments;
+//import com.tip.functional.Experiments;
 
 enum Quality {
     BEST, GOOD, REGULAR, POOR;
+    private static final Random rand = new Random();
+
+    public static Quality randomQuality(){
+        Quality[] qualities = values();
+        return qualities[rand.nextInt(qualities.length)];
+    }
 }
 
 
@@ -23,8 +33,7 @@ public class MonteCarloTest {
          *
          * 참 거짓을 답하는 함수(실험)를 n 번 시행하고 참이 나온 횟수를 n으로 나눕니다.
          */
-        BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n,
-                experiment) -> Mathx.sum(limit(map(generate(experiment), binary -> binary), n)) / n;
+        BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n, experiment) -> Mathx.sum(limit(generate(experiment), n)) / n;
 
         /*
          * 몬테카를로 방식으로 값을 어림잡을 수 있습니다. 두 마구잡이 수가 서로 소인지 알아보는 함수 Mathx.dirichletTest를 씁니다.
@@ -39,16 +48,38 @@ public class MonteCarloTest {
          */
 
         // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
-        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator =
+        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment ->
+            zip((count, sum) -> sum / count, iterate(0, x -> x + 1), iterate(1.0, x -> x + experiment.get()));
 
-        /*
-         *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
-         */
+//            return new Iterator<Double>() {
+//                private long count = 0;
+//                private double sum = 0.0;
+//
+//                @Override
+//                public boolean hasNext() {
+//                    return true;
+//                }
+//
+//                @Override
+//                public Double next() {
+//                    double value = experiment.get();
+//                    count++;
+//                    sum += value;
+//                    return sum / count;
+//                }
+//            };
 
-        Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
-                ratio -> Math.sqrt(6.0 / ratio));
-        System.out.println(get(pi, 100_1000));
-    }
+
+
+            /*
+             *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
+             */
+
+            Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
+                    ratio -> Math.sqrt(6.0 / ratio));
+
+            System.out.println(get(pi, 100000));
+        }
 
     private static void potionTestWithInfiniteIterators() {
         /*
@@ -76,8 +107,10 @@ public class MonteCarloTest {
          */
         Iterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
         // TODO 아래 주석을 제거하고 첫 번째 인자 채우기
-        // Iterator<Quality> herbQualities = zip(
-        // , herbAvailablities, qualities);
+         Iterator<Quality> herbQualities = zip((distribute,quality) -> {
+            if(distribute == 1) return Quality.BEST;
+            else return Quality.randomQuality();
+         }, herbAvailablities, qualities);
 
         EnumMap<Quality, Supplier<Double>> normalDistributions = new EnumMap<>(Quality.class);
         normalDistributions.put(Quality.BEST, () -> Mathx.randDoubleNormallyDistributed(90, 10));
@@ -108,7 +141,7 @@ public class MonteCarloTest {
          * 계산 결과를 순서대로 하나씩 목록에 저장하는 방식으로 실제 계산을 합니다. 계산 순열 effects에는 다른 계산 순열 herbQualities가 연결되어 있고
          * 이는 다시 herbAvaliablities로 연결되어 있기 때문에 한 계산이 다른 계산으로 이어집니다.
          */
-        toList(limit(medicineEffects, 100));
+        System.out.println(toList(limit(medicineEffects, 100)));
     }
 
     private static void potionTestWithExperiments() {
@@ -135,7 +168,7 @@ public class MonteCarloTest {
                         "binomial distribution");
 
         Experiments<Integer> herbQualities = new Experiments<>(
-                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : effect,
+                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : Quality.randomQuality().ordinal(),
                         herbAvailablities, Mathx.discreteUniformDistribution(Quality.class)),
                 "herb qualities", "discrete uniform distribition");
 
@@ -168,6 +201,7 @@ public class MonteCarloTest {
          *
          * 좋은 약초를 얻을 확률은 얼마나 될까요?
          */
+
         System.out.println("Herb availability");
         herbAvailablities.report();
         System.out.println();
@@ -186,9 +220,10 @@ public class MonteCarloTest {
     }
 
     public static void main(String[] args) {
+
+
         MonteCarloTest.piDemo();
         MonteCarloTest.potionTestWithInfiniteIterators();
         MonteCarloTest.potionTestWithExperiments();
     }
-
 }
