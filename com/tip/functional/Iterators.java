@@ -25,10 +25,20 @@ public class Iterators {
     }
 
     public static <T> boolean equals(Iterator<T> xs, Iterator<T> ys) { // TODO: reduce,zip를 써서
-
+        return reduce(zip(Object::equals, xs, ys), (x, y) -> x && y, true) && (xs.hasNext() == ys.hasNext());
     }
 
+//    public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
+//        String str = reduce(es, (prev, next) -> prev + separator + next, "");
+//        return str.replaceFirst(separator,"");
+//    }
+
     public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
+        String firstValue = "";
+        if (es.hasNext()) {
+            firstValue = es.next().toString() ;
+        }
+        return reduce(es, (prev, next) -> prev + separator + next, firstValue);
     }
 
 
@@ -51,20 +61,19 @@ public class Iterators {
             private E current;
 
             public boolean hasNext() {
-                while (iterator.hasNext()) {
-                    current = iterator.next();
-                    if (predicate.test(current)) {
-                        return true;
-                    }
+                if (current == null) {
+                    current = findFirst(iterator, predicate);
                 }
-                return false;
+                return current != null;
             }
 
             public E next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("filter");
                 }
-                return current;
+                E old = current;
+                current = findFirst(iterator, predicate);
+                return old;
             }
         };
     }
@@ -81,7 +90,7 @@ public class Iterators {
 
     public static <T> InfiniteIterator<T> iterate(T seed, UnaryOperator<T> f) {
         return new InfiniteIterator<T>() {
-            T current = seed;
+            public T current = seed;
 
             @Override
             public T next() {
@@ -93,18 +102,27 @@ public class Iterators {
     }
 
     public static <T> Iterator<T> limit(Iterator<T> iterator, long maxSize) { // TODO
-        int count = 0;
-        return new InfiniteIterator<T>() {
+        return new Iterator<>() {
+            private long count = 0;
+
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext() && (count < maxSize);
+            }
 
             @Override
             public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("limit");
+                }
+                count++;
                 return iterator.next();
             }
         };
     }
 
     public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-
+        return supplier::get;
     }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
@@ -125,6 +143,7 @@ public class Iterators {
 
     public static <E> long count(Iterator<E> iterator) {
         // TODO: reduce를 써서
+        return reduce(iterator, (sum, value) -> sum + 1, 0);
     }
 
     public static <T> T get(Iterator<T> iterator, long index) {
