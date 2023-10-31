@@ -8,8 +8,8 @@ public class Experiments<T extends Number> implements Iterator<T> {
     Iterator<T> iterator;
     private long count;
     private double sum;
-    private String group;
-    private String title;
+    private final String group;
+    private final String title;
 
     public Experiments(Iterator<T> iterator, String group, String title) {
         this.iterator = iterator;
