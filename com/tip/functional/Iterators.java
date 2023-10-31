@@ -36,7 +36,7 @@ public class Iterators {
     public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
         String firstValue = "";
         if (es.hasNext()) {
-            firstValue = es.next().toString() ;
+            firstValue = es.next().toString();
         }
         return reduce(es, (prev, next) -> prev + separator + next, firstValue);
     }
@@ -115,7 +115,7 @@ public class Iterators {
                 if (!hasNext()) {
                     throw new NoSuchElementException("limit");
                 }
-                count++;
+                count = Math.addExact(count, 1);
                 return iterator.next();
             }
         };
