@@ -1,11 +1,7 @@
 package com.tip.functional;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 public class Iterators {
 
@@ -23,16 +19,15 @@ public class Iterators {
 
     public static <T> boolean equals(Iterator<T> xs, Iterator<T> ys) { // TODO: reduce,zip를 써서
         // TODO: reduce, zip을 써서
-        Iterator<Boolean> equalsIterator = zip((xValue,yValue)-> xValue.equals(yValue) && (xs.hasNext() == ys.hasNext()),xs,ys);
-        return reduce(equalsIterator,(x,y) -> x && y,true);
+        return reduce(zip(Object::equals, xs, ys), (x, y) -> x && y, true) && xs.hasNext() == ys.hasNext();
     }
+
     public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
-        return reduce(es,(acc,element)->{
-            if(acc.isEmpty()){
+        return reduce(es, (acc, element) -> {
+            if (acc.isEmpty()) {
                 return element.toString();
-            }
-            else return acc + separator + element;
-        },"");
+            } else return acc + separator + element;
+        }, "");
     }
 
 
@@ -53,18 +48,20 @@ public class Iterators {
         // findFirst를 써서 풀기
         return new Iterator<E>() {
             private E current;
+
             public boolean hasNext() {
-                if(Objects.isNull(current)){
-                    current = findFirst(iterator,predicate);
+                if (Objects.isNull(current)) {
+                    current = findFirst(iterator, predicate);
                 }
-                return !Objects.isNull(current);
+                return Objects.nonNull(current);
             }
+
             public E next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("filter");
                 }
                 E tmp = current;
-                current = findFirst(iterator,predicate);
+                current = findFirst(iterator, predicate);
                 return tmp;
             }
         };
@@ -99,34 +96,28 @@ public class Iterators {
     }
 
     public static <T> Iterator<T> limit(Iterator<T> iterator, long maxSize) { // TODO
-        if(maxSize < 0) throw new IllegalArgumentException(Long.toString(maxSize));
+        if (maxSize < 0) throw new IllegalArgumentException(Long.toString(maxSize));
 
         return new Iterator<T>() {
-            int run = 0;
+            private long count = 0;
+
             @Override
             public boolean hasNext() {
-                if(run < maxSize)
-                    return true;
-                return false;
+                return iterator.hasNext() && (count < maxSize);
             }
 
             @Override
             public T next() {
-                if(!hasNext())
+                if (!hasNext())
                     throw new NoSuchElementException("limit");
-                run++;
+                count = Math.addExact(count, 1);
                 return iterator.next();
             }
         };
     }
 
     public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-        return new InfiniteIterator<T>() {
-            @Override
-            public T next() {
-                return supplier.get();
-            }
-        };
+        return supplier::get;
     }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
@@ -147,7 +138,8 @@ public class Iterators {
 
     public static <E> long count(Iterator<E> iterator) {
         // TODO: reduce를 써서
-        return reduce(iterator,(x,y)->x+1,0);
+        // y값 못빼나요?
+        return reduce(iterator, (x, y) -> x + 1, 0);
     }
 
     public static <T> T get(Iterator<T> iterator, long index) {
@@ -198,16 +190,6 @@ public class Iterators {
     }
 
     private Iterators() {
-    }
-
-    public static void main(String[] args) {
-        int[] a = new int[]{
-                1,2,3,4
-        };
-        int[] b = new int[]{
-                1,2,3,4
-        };
-        System.out.println(equals(Arrays.stream(a).iterator(), Arrays.stream(b).iterator()));
     }
 }
 

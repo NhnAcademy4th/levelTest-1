@@ -1,16 +1,18 @@
 package com.tip.functional;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public final class Range implements Iterable<Long> {
     private long startInclusive;
     private long endExclusive;
 
     public Range(long startInclusive, long endExclusive) {
-        // long value 이상인 경우
-        if(startInclusive == Long.MAX_VALUE || endExclusive == Long.MIN_VALUE){
-            throw new ArithmeticException("long overflow");
-        }
+//        // long value 이상인 경우
+//        if(startInclusive == Long.MAX_VALUE || endExclusive == Long.MIN_VALUE){
+//            throw new ArithmeticException("long overflow");
+//        }
 
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
@@ -76,10 +78,5 @@ public final class Range implements Iterable<Long> {
     @Override
     public int hashCode() {
         return Objects.hash(startInclusive, endExclusive);
-    }
-
-    public static void main(String[] args) {
-        new Range(0,Long.MAX_VALUE + 1);
-        System.out.println(Long.MAX_VALUE + 1);
     }
 }
