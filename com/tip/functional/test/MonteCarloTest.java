@@ -1,8 +1,11 @@
 package com.tip.functional.test;
 
+import com.tip.functional.Experiments;
 import com.tip.functional.InfiniteIterator;
 import com.tip.functional.Iterators;
+import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -13,6 +16,12 @@ import static com.tip.functional.Iterators.*;
 
 enum Quality {
     BEST, GOOD, REGULAR, POOR;
+    private static final Random rand = new Random();
+
+    public static Quality randomQuality(){
+        Quality[] qualities = values();
+        return qualities[rand.nextInt(qualities.length)];
+    }
 }
 
 
@@ -41,6 +50,7 @@ public class MonteCarloTest {
         // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
         Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment ->
             zip((count, sum) -> sum / count, iterate(0, x -> x + 1), iterate(1.0, x -> x + experiment.get()));
+
 //            return new Iterator<Double>() {
 //                private long count = 0;
 //                private double sum = 0.0;
@@ -97,8 +107,10 @@ public class MonteCarloTest {
          */
         Iterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
         // TODO 아래 주석을 제거하고 첫 번째 인자 채우기
-        // Iterator<Quality> herbQualities = zip(
-        // , herbAvailablities, qualities);
+         Iterator<Quality> herbQualities = zip((distribute,quality) -> {
+            if(distribute == 1) return Quality.BEST;
+            else return Quality.randomQuality();
+         }, herbAvailablities, qualities);
 
         EnumMap<Quality, Supplier<Double>> normalDistributions = new EnumMap<>(Quality.class);
         normalDistributions.put(Quality.BEST, () -> Mathx.randDoubleNormallyDistributed(90, 10));
@@ -129,87 +141,89 @@ public class MonteCarloTest {
          * 계산 결과를 순서대로 하나씩 목록에 저장하는 방식으로 실제 계산을 합니다. 계산 순열 effects에는 다른 계산 순열 herbQualities가 연결되어 있고
          * 이는 다시 herbAvaliablities로 연결되어 있기 때문에 한 계산이 다른 계산으로 이어집니다.
          */
-        toList(limit(medicineEffects, 100));
+        System.out.println(toList(limit(medicineEffects, 100)));
     }
 
-//    private static void potionTestWithExperiments() {
-//        /*
-//         * 약효 모의 실험은 잘 되지만 실험은 결과 만큼 과정에 대한 정보도 중요합니다. 계산 과정에 쓴 데이터들 곧 약초와 품질, 그에 따른 약물의 품질, 그리고 약효에
-//         * 대한 데이터가 될 수 있는 한 상세하게 보고서로 나와야 쓸모있는 실험이 됩니다. Iterator를 쓰는 코드 얼개를 조금도 망가뜨리지 않고 필요한 정보만
-//         * 저장했다가 꺼내보는 방법이 필요합니다.
-//         *
-//         * 계산과 저장을 가능한 하지 않고 미루는 방식과 계산 과정에서 얻은 정보를 적절히 저장하는 두 가지 다른 방식을 한 데 엮어 쓰는 본보기가 됩니다. 문제는 그에
-//         * 맞는 풀이 방법이 제 각기 다를 수 있습니다. 굳이 한 가지 방법만을 고집할 필요가 없습니다.
-//         */
-//
-//        /*
-//         * 계산 과정에서 얻은 데이터 곧 횟수와 합을 저장하기 때문에 필요할 때 꺼내 쓸 수 있으면서도 InfiniteIterator로 동작하는 Experiments
-//         * class를 만들 수 있습니다.
-//         *
-//         * 코드 구조가 거의 바뀌지 않았습니다. Experiments로 덧 쒸운 코드 말고는 달라진 부분이 거의 없습니다. 하지만 이 번에는 계산 정보를 저장했다가 출력할
-//         * 준비가 되어 있습니다.
-//         */
-//
-//        final double herbRatio = 0.2;
-//        Experiments<Integer> herbAvailablities = // TODO: Experiments 만들기
-//                new Experiments<>(Mathx.binaryDistribution(herbRatio), "herb availabilities",
-//                        "binomial distribution");
-//
-//        Experiments<Integer> herbQualities = new Experiments<>(
-//                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : effect,
-//                        herbAvailablities, Mathx.discreteUniformDistribution(Quality.class)),
-//                "herb qualities", "discrete uniform distribition");
-//
-//        EnumMap<Quality, Experiments<Double>> normalDistributions = new EnumMap<>(Quality.class);
-//        String normalDistribution = "normal distribition";
-//        normalDistributions.put(Quality.BEST, new Experiments<>(Mathx.normalDistribution(90, 10),
-//                "best effect", normalDistribution));
-//        normalDistributions.put(Quality.GOOD, new Experiments<>(Mathx.normalDistribution(80, 20),
-//                "good effect", normalDistribution));
-//        normalDistributions.put(Quality.REGULAR, new Experiments<>(Mathx.normalDistribution(50, 30),
-//                "regular effect", normalDistribution));
-//        normalDistributions.put(Quality.POOR, new Experiments<>(Mathx.normalDistribution(30, 40),
-//                "poor effect", normalDistribution));
-//
-//        Iterator<Double> medicineEffects = map(herbQualities, quality -> {
-//            double effect = normalDistributions.get(Quality.values()[quality]).next();
-//            if (effect < 0)
-//                return 0D;
-//            if (effect > 100)
-//                return 100D;
-//            return effect;
-//        });
-//
-//        toList(limit(medicineEffects, 7000)); // 실제 계산은 여기서 일어납니다!!!
-//
-//        /*
-//         * 모든 계산이 마무리되었으므로 계산 결과를 볼 수 있습니다. MonteCarlo 클래스가 없다면 계산 순열을 끝없이 늘어놓는 일과 계산 과정을 기록하는 일, 이
-//         * 둘을 한 꾸러미로 묶어내기가 (언제나 그렇듯이 한 방법으로 다른 방법을 완전히 대체하는 할 수 있지만) 무척 번거롭습니다. 문제마다 알맞은 방법을 골라서 서로
-//         * 잘 어울리도록 짜 맞추면 프로그램의 얼개가 아주 튼튼해집니다. 성능을 시험하고 고장난 곳을 찾아서 고치기에도 좋은 짜임새를 갖추게 됩니다.
-//         *
-//         * 좋은 약초를 얻을 확률은 얼마나 될까요?
-//         */
-//        System.out.println("Herb availability");
-//        herbAvailablities.report();
-//        System.out.println();
-//
-//        /* 좋은 약초가 있고 없고에 따른 약재의 품질은 어떤가요? */
-//        System.out.println("Herb quality (Excellent = 0, Good = 1, Marginal = 2, Poor = 3): ");
-//        herbQualities.report();
-//        System.out.println();
-//
-//        /* 약초 품질에 따른 약물의 효과는 어떻게 분포되나요? */
-//        System.out.println("Potion effects by the 4 quality categories: ");
-//        for (Quality quality : Quality.values()) {
-//            normalDistributions.get(quality).report();
-//            System.out.println();
-//        }
-//    }
+    private static void potionTestWithExperiments() {
+        /*
+         * 약효 모의 실험은 잘 되지만 실험은 결과 만큼 과정에 대한 정보도 중요합니다. 계산 과정에 쓴 데이터들 곧 약초와 품질, 그에 따른 약물의 품질, 그리고 약효에
+         * 대한 데이터가 될 수 있는 한 상세하게 보고서로 나와야 쓸모있는 실험이 됩니다. Iterator를 쓰는 코드 얼개를 조금도 망가뜨리지 않고 필요한 정보만
+         * 저장했다가 꺼내보는 방법이 필요합니다.
+         *
+         * 계산과 저장을 가능한 하지 않고 미루는 방식과 계산 과정에서 얻은 정보를 적절히 저장하는 두 가지 다른 방식을 한 데 엮어 쓰는 본보기가 됩니다. 문제는 그에
+         * 맞는 풀이 방법이 제 각기 다를 수 있습니다. 굳이 한 가지 방법만을 고집할 필요가 없습니다.
+         */
+
+        /*
+         * 계산 과정에서 얻은 데이터 곧 횟수와 합을 저장하기 때문에 필요할 때 꺼내 쓸 수 있으면서도 InfiniteIterator로 동작하는 Experiments
+         * class를 만들 수 있습니다.
+         *
+         * 코드 구조가 거의 바뀌지 않았습니다. Experiments로 덧 쒸운 코드 말고는 달라진 부분이 거의 없습니다. 하지만 이 번에는 계산 정보를 저장했다가 출력할
+         * 준비가 되어 있습니다.
+         */
+
+        final double herbRatio = 0.2;
+        Experiments<Integer> herbAvailablities = // TODO: Experiments 만들기
+                new Experiments<>(Mathx.binaryDistribution(herbRatio), "herb availabilities",
+                        "binomial distribution");
+
+        Experiments<Integer> herbQualities = new Experiments<>(
+                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : Quality.randomQuality().ordinal(),
+                        herbAvailablities, Mathx.discreteUniformDistribution(Quality.class)),
+                "herb qualities", "discrete uniform distribition");
+
+        EnumMap<Quality, Experiments<Double>> normalDistributions = new EnumMap<>(Quality.class);
+        String normalDistribution = "normal distribition";
+        normalDistributions.put(Quality.BEST, new Experiments<>(Mathx.normalDistribution(90, 10),
+                "best effect", normalDistribution));
+        normalDistributions.put(Quality.GOOD, new Experiments<>(Mathx.normalDistribution(80, 20),
+                "good effect", normalDistribution));
+        normalDistributions.put(Quality.REGULAR, new Experiments<>(Mathx.normalDistribution(50, 30),
+                "regular effect", normalDistribution));
+        normalDistributions.put(Quality.POOR, new Experiments<>(Mathx.normalDistribution(30, 40),
+                "poor effect", normalDistribution));
+
+        Iterator<Double> medicineEffects = map(herbQualities, quality -> {
+            double effect = normalDistributions.get(Quality.values()[quality]).next();
+            if (effect < 0)
+                return 0D;
+            if (effect > 100)
+                return 100D;
+            return effect;
+        });
+
+        toList(limit(medicineEffects, 7000)); // 실제 계산은 여기서 일어납니다!!!
+
+        /*
+         * 모든 계산이 마무리되었으므로 계산 결과를 볼 수 있습니다. MonteCarlo 클래스가 없다면 계산 순열을 끝없이 늘어놓는 일과 계산 과정을 기록하는 일, 이
+         * 둘을 한 꾸러미로 묶어내기가 (언제나 그렇듯이 한 방법으로 다른 방법을 완전히 대체하는 할 수 있지만) 무척 번거롭습니다. 문제마다 알맞은 방법을 골라서 서로
+         * 잘 어울리도록 짜 맞추면 프로그램의 얼개가 아주 튼튼해집니다. 성능을 시험하고 고장난 곳을 찾아서 고치기에도 좋은 짜임새를 갖추게 됩니다.
+         *
+         * 좋은 약초를 얻을 확률은 얼마나 될까요?
+         */
+
+        System.out.println("Herb availability");
+        herbAvailablities.report();
+        System.out.println();
+
+        /* 좋은 약초가 있고 없고에 따른 약재의 품질은 어떤가요? */
+        System.out.println("Herb quality (Excellent = 0, Good = 1, Marginal = 2, Poor = 3): ");
+        herbQualities.report();
+        System.out.println();
+
+        /* 약초 품질에 따른 약물의 효과는 어떻게 분포되나요? */
+        System.out.println("Potion effects by the 4 quality categories: ");
+        for (Quality quality : Quality.values()) {
+            normalDistributions.get(quality).report();
+            System.out.println();
+        }
+    }
 
     public static void main(String[] args) {
 
+
         MonteCarloTest.piDemo();
-//        MonteCarloTest.potionTestWithInfiniteIterators();
-//        MonteCarloTest.potionTestWithExperiments();
+        MonteCarloTest.potionTestWithInfiniteIterators();
+        MonteCarloTest.potionTestWithExperiments();
     }
 }

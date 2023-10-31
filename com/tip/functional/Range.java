@@ -6,27 +6,19 @@ public final class Range implements Iterable<Long> {
     private long startInclusive;
     private long endExclusive;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Range longs = (Range) o;
-        return startInclusive == longs.startInclusive && endExclusive == longs.endExclusive;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(startInclusive, endExclusive);
-    }
-
     public Range(long startInclusive, long endExclusive) {
+        // long value 이상인 경우
+        if(startInclusive == Long.MAX_VALUE || endExclusive == Long.MIN_VALUE){
+            throw new ArithmeticException("long overflow");
+        }
+
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
         classInvariant();
     }
 
     public Range(long endExclusive) {
-        this(0, endExclusive);
+        this(1, endExclusive);
     }
 
     public static Range closed(long startInclusive, long endInclusive) {
@@ -71,5 +63,23 @@ public final class Range implements Iterable<Long> {
                 return value;
             }
         };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Range longs = (Range) o;
+        return startInclusive == longs.startInclusive && endExclusive == longs.endExclusive;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startInclusive, endExclusive);
+    }
+
+    public static void main(String[] args) {
+        new Range(0,Long.MAX_VALUE + 1);
+        System.out.println(Long.MAX_VALUE + 1);
     }
 }
