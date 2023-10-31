@@ -1,8 +1,9 @@
 package com.tip.functional.test;
 
+import static com.tip.functional.Iterators.*;
+
+import com.tip.Mathx;
 import com.tip.functional.Experiments;
-import com.tip.functional.InfiniteIterator;
-import com.tip.functional.Iterators;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Random;
@@ -10,18 +11,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.tip.Mathx;
-import static com.tip.functional.Iterators.*;
-//import com.tip.functional.Experiments;
-
 enum Quality {
     BEST, GOOD, REGULAR, POOR;
     private static final Random rand = new Random();
-
-    public static Quality randomQuality(){
-        Quality[] qualities = values();
-        return qualities[rand.nextInt(qualities.length)];
-    }
 }
 
 
@@ -49,37 +41,16 @@ public class MonteCarloTest {
 
         // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
         Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment ->
-            zip((count, sum) -> sum / count, iterate(0, x -> x + 1), iterate(1.0, x -> x + experiment.get()));
+                zip((count, sum) -> sum / count, iterate(0, x -> x + 1), iterate(1.0, x -> x + experiment.get()));
+        /*
+         *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
+         */
 
-//            return new Iterator<Double>() {
-//                private long count = 0;
-//                private double sum = 0.0;
-//
-//                @Override
-//                public boolean hasNext() {
-//                    return true;
-//                }
-//
-//                @Override
-//                public Double next() {
-//                    double value = experiment.get();
-//                    count++;
-//                    sum += value;
-//                    return sum / count;
-//                }
-//            };
+        Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
+                ratio -> Math.sqrt(6.0 / ratio));
 
-
-
-            /*
-             *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
-             */
-
-            Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
-                    ratio -> Math.sqrt(6.0 / ratio));
-
-            System.out.println(get(pi, 100000));
-        }
+        System.out.println(get(pi, 100000));
+    }
 
     private static void potionTestWithInfiniteIterators() {
         /*
@@ -107,10 +78,7 @@ public class MonteCarloTest {
          */
         Iterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
         // TODO 아래 주석을 제거하고 첫 번째 인자 채우기
-         Iterator<Quality> herbQualities = zip((distribute,quality) -> {
-            if(distribute == 1) return Quality.BEST;
-            else return Quality.randomQuality();
-         }, herbAvailablities, qualities);
+        Iterator<Quality> herbQualities = zip((distribute, quality) -> distribute == 1 ? Quality.BEST : Quality.values()[quality], herbAvailablities, qualities);
 
         EnumMap<Quality, Supplier<Double>> normalDistributions = new EnumMap<>(Quality.class);
         normalDistributions.put(Quality.BEST, () -> Mathx.randDoubleNormallyDistributed(90, 10));
@@ -168,7 +136,7 @@ public class MonteCarloTest {
                         "binomial distribution");
 
         Experiments<Integer> herbQualities = new Experiments<>(
-                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : Quality.randomQuality().ordinal(),
+                zip((available, effect) -> available == 1 ? Quality.BEST.ordinal() : effect,
                         herbAvailablities, Mathx.discreteUniformDistribution(Quality.class)),
                 "herb qualities", "discrete uniform distribition");
 
@@ -220,8 +188,6 @@ public class MonteCarloTest {
     }
 
     public static void main(String[] args) {
-
-
         MonteCarloTest.piDemo();
         MonteCarloTest.potionTestWithInfiniteIterators();
         MonteCarloTest.potionTestWithExperiments();
