@@ -25,10 +25,11 @@ public class Iterators {
     }
 
     public static <T> boolean equals(Iterator<T> xs, Iterator<T> ys) { // TODO: reduce,zip를 써서
-
+        return reduce(zip((x, y) -> x == y, xs, ys), (r1, r2) -> r1 && r2, count(xs) == count(ys));
     }
 
-    public static <T> String toString(Iterator<T> es, String separator) { // TODO: redude를 써서
+    public static <T> String toString(Iterator<T> es, String separator) { // TODO: reduce를 써서
+        return reduce(es, (r, e) -> r + separator + e, "" + es.next());
     }
 
 
@@ -93,18 +94,27 @@ public class Iterators {
     }
 
     public static <T> Iterator<T> limit(Iterator<T> iterator, long maxSize) { // TODO
-        int count = 0;
-        return new InfiniteIterator<T>() {
+        return new Iterator<>() {
+            long count = 1L;
+
+            @Override
+            public boolean hasNext() {
+                return count <= maxSize && iterator.hasNext();
+            }
 
             @Override
             public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                count = Math.addExact(count, 1);
                 return iterator.next();
             }
         };
     }
 
     public static <T> InfiniteIterator<T> generate(Supplier<T> supplier) { // TODO:
-
+        return supplier::get;
     }
 
     public static <X, Y, Z> Iterator<Z> zip(BiFunction<X, Y, Z> biFunction, Iterator<X> xIterator,
@@ -125,6 +135,7 @@ public class Iterators {
 
     public static <E> long count(Iterator<E> iterator) {
         // TODO: reduce를 써서
+        return reduce(iterator, (r, e) -> r + 1, 0);
     }
 
     public static <T> T get(Iterator<T> iterator, long index) {
