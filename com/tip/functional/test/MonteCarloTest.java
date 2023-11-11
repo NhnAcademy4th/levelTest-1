@@ -4,16 +4,14 @@ import static com.tip.functional.Iterators.*;
 
 import com.tip.Mathx;
 import com.tip.functional.Experiments;
+import com.tip.functional.InfiniteIterator;
 import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 enum Quality {
     BEST, GOOD, REGULAR, POOR;
-    private static final Random rand = new Random();
 }
 
 
@@ -25,6 +23,7 @@ public class MonteCarloTest {
          *
          * 참 거짓을 답하는 함수(실험)를 n 번 시행하고 참이 나온 횟수를 n으로 나눕니다.
          */
+
         BiFunction<Long, Supplier<Integer>, Double> monteCarlo = (n, experiment) -> Mathx.sum(limit(generate(experiment), n)) / n;
 
         /*
@@ -40,13 +39,14 @@ public class MonteCarloTest {
          */
 
         // TODO: Iterators.{iterate, zip}을 써서 코드 채우기
-        Function<Supplier<Integer>, Iterator<Double>> monteCarloIterator = experiment ->
-                zip((count, sum) -> sum / count, iterate(0, x -> x + 1), iterate(1.0, x -> x + experiment.get()));
+        Function<Supplier<Integer>, InfiniteIterator<Double>> monteCarloIterator =
+                experiment -> zip((x, y) -> x / y, iterate((double) 0, x -> x + experiment.get()), iterate(1, x -> x + 1));
+
         /*
          *  PI 값으로 끝없이 수렴하는 수열을 표현할 수 있습니다.
          */
 
-        Iterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
+        InfiniteIterator<Double> pi = map(monteCarloIterator.apply(() -> Mathx.dirichletTest() ? 1 : 0),
                 ratio -> Math.sqrt(6.0 / ratio));
 
         System.out.println(get(pi, 100000));
@@ -69,18 +69,21 @@ public class MonteCarloTest {
          * 베르누이 분포를 얻을 수 있습니다. 좋은 약초 발견 가능성을 이항 분포로 뽑아냅니다.
          */
         final double herbRatio = 0.2;
-        Iterator<Integer> herbAvailablities = Mathx.binaryDistribution(herbRatio);
+        InfiniteIterator<Integer> herbAvailablities = Mathx.binaryDistribution(herbRatio);
         /*
          * 좋은 약초는 BEST 품질. 좋은 약초가 없으면 다른 약초를 여럿 섞어서 대신 쓰는데 그 품질이 고르지 않습니다. 좋은 약초가 있느냐 없느냐에 따른 약초의
          * 효과를 어림잡는 함수를 만듭니다.
          *
          * 네 가지 품질 가운데 하나가 고르게 뽑히도록 이산 균등 분포를 씁니다.
          */
-        Iterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
+        InfiniteIterator<Integer> qualities = Mathx.discreteUniformDistribution(Quality.class);
+
         // TODO 아래 주석을 제거하고 첫 번째 인자 채우기
-        Iterator<Quality> herbQualities = zip((distribute, quality) -> distribute == 1 ? Quality.BEST : Quality.values()[quality], herbAvailablities, qualities);
+        InfiniteIterator<Quality> herbQualities =
+                zip((x, y) -> x == 1 ? Quality.BEST : Quality.values()[x], herbAvailablities, qualities);
 
         EnumMap<Quality, Supplier<Double>> normalDistributions = new EnumMap<>(Quality.class);
+
         normalDistributions.put(Quality.BEST, () -> Mathx.randDoubleNormallyDistributed(90, 10));
         normalDistributions.put(Quality.GOOD, () -> Mathx.randDoubleNormallyDistributed(80, 20));
         normalDistributions.put(Quality.REGULAR, () -> Mathx.randDoubleNormallyDistributed(50, 30));
@@ -91,7 +94,7 @@ public class MonteCarloTest {
          * 네 가지로 분류하되 그 또한 마구잡이로 약효에 편차가 생기도록 네 가지 정상 분포로 표현합니다.
          */
         /* 약초의 품질에 따른 약물 효과를 마구잡이로 뽑는 함수를 만듭니다. 약물 효과는 0에서 100사이 값이므로 이 범위를 넘는 값을 잘라냅니다. */
-        Iterator<Double> medicineEffects = map(herbQualities, quality -> {
+        InfiniteIterator<Double> medicineEffects = map(herbQualities, quality -> {
             double effect = normalDistributions.get(quality).get();
             if (effect < 0)
                 return 0D;
@@ -151,7 +154,7 @@ public class MonteCarloTest {
         normalDistributions.put(Quality.POOR, new Experiments<>(Mathx.normalDistribution(30, 40),
                 "poor effect", normalDistribution));
 
-        Iterator<Double> medicineEffects = map(herbQualities, quality -> {
+        InfiniteIterator<Double> medicineEffects = map(herbQualities, quality -> {
             double effect = normalDistributions.get(Quality.values()[quality]).next();
             if (effect < 0)
                 return 0D;

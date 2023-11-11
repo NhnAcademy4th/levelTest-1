@@ -9,11 +9,6 @@ public final class Range implements Iterable<Long> {
     private long endExclusive;
 
     public Range(long startInclusive, long endExclusive) {
-//        // long value 이상인 경우
-//        if(startInclusive == Long.MAX_VALUE || endExclusive == Long.MIN_VALUE){
-//            throw new ArithmeticException("long overflow");
-//        }
-
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
         classInvariant();

@@ -1,10 +1,10 @@
 package com.tip.functional;
 
-import java.util.Iterator;
-
-public interface InfiniteIterator<T> extends Iterator<T> {
+public interface InfiniteIterator<T> {
     // TODO: 채우기
-    default boolean hasNext(){
+    default boolean hasNext() {
         return true;
     }
+
+    T next();
 }
