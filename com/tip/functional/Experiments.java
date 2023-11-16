@@ -1,18 +1,15 @@
 package com.tip.functional;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class Experiments<T extends Number> implements Iterator<T> {
-// TODO: 채우기
-
-    private Iterator<T> iterator;
+public class Experiments<T extends Number> implements InfiniteIterator<T> {
+    private InfiniteIterator<T> iterator;
     private String effect;
     private String distribution;
     private long count;
     private double sum;
 
-    public Experiments(Iterator<T> iterator, String effect, String distribution) {
+    public Experiments(InfiniteIterator<T> iterator, String effect, String distribution) {
         this.iterator = iterator;
         this.effect = effect;
         this.distribution = distribution;
@@ -35,6 +32,7 @@ public class Experiments<T extends Number> implements Iterator<T> {
         count = Math.addExact(count, 1);
         T element = iterator.next();
         sum += element.doubleValue();
+
         return element;
     }
 }

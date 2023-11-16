@@ -6,6 +6,7 @@ public class Fibonacci implements InfiniteIterator<Integer> {
     private int prev;
     private int current;
 
+
     public Fibonacci() {
         this.prev = 0;
         this.current = 1;
@@ -18,4 +19,5 @@ public class Fibonacci implements InfiniteIterator<Integer> {
         current = temp + current;
         return prev;
     }
+
 }

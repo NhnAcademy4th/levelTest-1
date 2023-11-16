@@ -1,15 +1,18 @@
 package com.tip;
 
-import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.concurrent.ThreadLocalRandom;
+import static com.tip.functional.Iterators.generate;
+import static com.tip.functional.Iterators.reduce;
+
 import com.tip.functional.Fibonacci;
 import com.tip.functional.InfiniteIterator;
 import com.tip.functional.Range;
-import static com.tip.functional.Iterators.*;
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Mathx {
-    private Mathx() {}
+    private Mathx() {
+    }
 
     public static int randInt() {
         return ThreadLocalRandom.current().nextInt();
@@ -80,7 +83,7 @@ public class Mathx {
         return randInt(0, constants.length);
     }
 
-    public static <T extends Enum<T>> Iterator<Integer> discreteUniformDistribution(
+    public static <T extends Enum<T>> InfiniteIterator<Integer> discreteUniformDistribution(
             Class<T> enumType) {
         return generate(() -> randEnumUniformlyDistributed(enumType));
     }
