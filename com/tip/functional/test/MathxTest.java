@@ -1,16 +1,18 @@
 package com.tip.functional.test;
 
-import org.junit.jupiter.api.Test;
-import com.tip.Mathx;
-import com.tip.functional.InfiniteIterator;
-import com.tip.functional.Iterators;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.tip.Mathx;
+import com.tip.functional.iterator.InfiniteIterator;
+import com.tip.functional.iterator.Iterators;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
 
 
 public class MathxTest {
@@ -41,9 +43,9 @@ public class MathxTest {
 
         Iterators.println(Iterators.limit(Iterators.generate(Mathx::randDouble), 20));
         Iterators.println(Iterators.limit(Mathx.randDoubles(), 20));
-        Iterators.println(new Random().doubles(20).iterator());
-        Iterators.println(ThreadLocalRandom.current().doubles(20).iterator());
-        Iterators.println(DoubleStream.generate(ThreadLocalRandom.current()::nextDouble).limit(20)
+        Iterators.println((Iterator<Double>) new Random().doubles(20).iterator());
+        Iterators.println((Iterator<Double>) ThreadLocalRandom.current().doubles(20).iterator());
+        Iterators.println((Iterator<Double>) DoubleStream.generate(ThreadLocalRandom.current()::nextDouble).limit(20)
                 .iterator());
     }
 

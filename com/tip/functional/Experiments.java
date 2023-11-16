@@ -1,5 +1,6 @@
 package com.tip.functional;
 
+import com.tip.functional.iterator.InfiniteIterator;
 import java.util.NoSuchElementException;
 
 public class Experiments<T extends Number> implements InfiniteIterator<T> {

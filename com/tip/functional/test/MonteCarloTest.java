@@ -1,10 +1,10 @@
 package com.tip.functional.test;
 
-import static com.tip.functional.Iterators.*;
+import static com.tip.functional.iterator.Iterators.*;
 
 import com.tip.Mathx;
 import com.tip.functional.Experiments;
-import com.tip.functional.InfiniteIterator;
+import com.tip.functional.iterator.InfiniteIterator;
 import java.util.EnumMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;

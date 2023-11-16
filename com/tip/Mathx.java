@@ -1,11 +1,11 @@
 package com.tip;
 
-import static com.tip.functional.Iterators.generate;
-import static com.tip.functional.Iterators.reduce;
+import static com.tip.functional.iterator.Iterators.generate;
+import static com.tip.functional.iterator.Iterators.reduce;
 
 import com.tip.functional.Fibonacci;
-import com.tip.functional.InfiniteIterator;
 import com.tip.functional.Range;
+import com.tip.functional.iterator.InfiniteIterator;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.concurrent.ThreadLocalRandom;

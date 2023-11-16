@@ -1,10 +1,10 @@
 package com.tip.functional.test;
 
-import static com.tip.functional.Iterators.*;
+import static com.tip.functional.iterator.Iterators.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.tip.functional.InfiniteIterator;
-import com.tip.functional.Iterators;
+import com.tip.functional.iterator.InfiniteIterator;
+import com.tip.functional.iterator.Iterators;
 import java.util.*;
 import org.junit.jupiter.api.*;
 
@@ -15,10 +15,10 @@ public class IteratorsTest {
     Iterator<Integer> intIterator2;
     Iterator<Double> doubleIterator1;
     Iterator<Double> doubleIterator2;
-    InfiniteIterator<Integer> infiniteIntIterator1;
-    InfiniteIterator<Integer> infiniteIntIterator2;
-    InfiniteIterator<Double> infiniteDoubleIterator1;
-    InfiniteIterator<Double> infiniteDoubleIterator2;
+    InfiniteIterator<Integer> intInfiniteIterator1;
+    InfiniteIterator<Integer> intInfiniteIterator2;
+    InfiniteIterator<Double> doubleInfiniteIterator1;
+    InfiniteIterator<Double> doubleInfiniteIterator2;
 
     @DisplayName("Reduce params Null check")
     @Test
@@ -28,15 +28,21 @@ public class IteratorsTest {
         assertThrows(IllegalArgumentException.class, () -> reduce(intIterator1, null, null));
     }
 
+    @DisplayName("Reduce PreCondition / InfiniteIterate")
+    @Test
+    void reduceInfiniteIteratorPrecondition() {
+        assertThrows(IllegalArgumentException.class, () -> reduce(intInfiniteIterator1, (x, y) -> x + y, 0));
+    }
+
     @DisplayName("Reduce postCondition / Integer")
     @Test
-    void reduceIteratorPsotCondition1() {
+    void reduceIteratorPostCondition1() {
         assertEquals(55, reduce(intIterator1, Integer::sum, 0));
     }
 
     @DisplayName("Reduce postCondition / Double")
     @Test
-    void reduceIteratorPsotCondition2() {
+    void reduceIteratorPostCondition2() {
         assertEquals(55d, reduce(doubleIterator1, Double::sum, 0d));
     }
 
@@ -71,14 +77,6 @@ public class IteratorsTest {
         assertThrows(IllegalArgumentException.class, () -> Iterators.equals(testIterator1, testIterator2));
     }
 
-    @DisplayName("Equals PreCondition Test / Iterator include null")
-    @Test
-    void eqaulsPostconditionTest3() {
-        Iterator<Integer> testIterator1 = Arrays.asList(1, 2, 3, 4, null, 5).iterator();
-        Iterator<Integer> testIterator2 = Arrays.asList(1, 2, 3, 4, null, 5).iterator();
-        assertThrows(NullPointerException.class, () -> Iterators.equals(testIterator1, testIterator2));
-    }
-
     @DisplayName("Equals PostCondition Test1 / Equal length")
     @Test
     void eqaulsPostconditionTest1() {
@@ -93,6 +91,14 @@ public class IteratorsTest {
         assertFalse(Iterators.equals(testIterator1, testIterator2));
     }
 
+    @DisplayName("Equals PreCondition Test / Iterator include null")
+    @Test
+    void eqaulsPostconditionTest3() {
+        Iterator<Integer> testIterator2 = Arrays.asList(1, 2, 3, 4, null, 5).iterator();
+        Iterator<Integer> testIterator1 = Arrays.asList(1, 2, 3, 4, null, 5).iterator();
+        assertTrue(Iterators.equals(testIterator1, testIterator2));
+    }
+
     @DisplayName("Equals PostCondition Test3 / same length, different value")
     @Test
     void equalsPostConditionTest3() {
@@ -105,14 +111,14 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void equalsPostConditionTest4() {
-        assertTrue(Iterators.equals(infiniteIntIterator1, infiniteIntIterator2));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.equals(intInfiniteIterator1, intInfiniteIterator2));
     }
 
     @DisplayName("Equals PostCondition Test5 / Compare two Double InfiniteIterator")
     @Order(2)
     @Test
     void equalsPostConditionTest5() {
-        assertTrue(Iterators.equals(infiniteDoubleIterator1, infiniteDoubleIterator2));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.equals(doubleInfiniteIterator1, doubleInfiniteIterator2));
     }
 
     @DisplayName("Equals PostCondition Test6 / Compare One Integer Iterator")
@@ -131,28 +137,21 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void equalsPostCondtionTest8() {
-        assertTrue(Iterators.equals(infiniteIntIterator1, infiniteIntIterator2));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.equals(intInfiniteIterator1, intInfiniteIterator2));
     }
 
-    @DisplayName("Equals PostCondition Test9 / Compare One Integer InfiniteIterator")
+    @DisplayName("Equals PostCondition Test9 / Compare One Double InfiniteIterator")
     @Order(2)
     @Test
     void equalsPostCondtionTest9() {
-        assertTrue(Iterators.equals(infiniteIntIterator1, infiniteIntIterator2));
-    }
-
-    @DisplayName("Equals PostCondition Test10 / Compare One Double InfiniteIterator")
-    @Order(2)
-    @Test
-    void equalsPostCondtionTest10() {
-        assertTrue(Iterators.equals(infiniteDoubleIterator1, infiniteDoubleIterator2));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.equals(doubleInfiniteIterator1, doubleInfiniteIterator2));
     }
 
     @DisplayName("toString() PreCondition Test1 / null check 1")
     @Test
     void toStringNullCheck1() {
         Iterator<Object> nullIterator = Arrays.asList(null, null, null).iterator();
-        assertThrows(IllegalArgumentException.class, () -> Iterators.toString(nullIterator, ","));
+        assertTrue("null,null,null".equals(Iterators.toString(nullIterator, ",")));
     }
 
     @DisplayName("toString() PreCondition Test2 / null check 2")
@@ -191,14 +190,14 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void mapNullCheck3() {
-        assertThrows(IllegalArgumentException.class, () -> Iterators.map(infiniteIntIterator1, null));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.map(intInfiniteIterator1, null));
     }
 
     @DisplayName("map() PreConditionCheck4 / Double InfiniteIterator Function param null")
     @Order(2)
     @Test
     void mapNullCheck4() {
-        assertThrows(IllegalArgumentException.class, () -> Iterators.map(infiniteIntIterator1, null));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.map(intInfiniteIterator1, null));
     }
 
     @DisplayName("map() PostConditionCheck1 / Integer Iterator")
@@ -225,7 +224,7 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void mapPostCondtionTest3() {
-        InfiniteIterator<Integer> mappingIterator = map(infiniteIntIterator1, x -> x * 10);
+        InfiniteIterator<Integer> mappingIterator = map(intInfiniteIterator1, x -> x * 10);
         InfiniteIterator<Integer> actualIterator = iterate(10, x -> x + 10);
         int count = 0;
         while (mappingIterator.hasNext() && count < INFINITE_MAX_TEST) {
@@ -238,7 +237,7 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void mapPostCondtionTest4() {
-        InfiniteIterator<Double> mappingIterator = map(infiniteIntIterator1, x -> x * 10d);
+        InfiniteIterator<Double> mappingIterator = map(intInfiniteIterator1, x -> x * 10d);
         InfiniteIterator<Double> actualIterator = iterate(10d, x -> x + 10);
         for (int i = 0; i < 10; i++) {
             assertEquals(mappingIterator.next(), actualIterator.next());
@@ -257,7 +256,7 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void filterPrecondtionCheck2() {
-        assertThrows(IllegalArgumentException.class, () -> filter(infiniteIntIterator1, null));
+        assertThrows(IllegalArgumentException.class, () -> filter(intInfiniteIterator1, null));
     }
 
     @DisplayName("filter() PostCondition / Iterator")
@@ -288,7 +287,7 @@ public class IteratorsTest {
     @Order(2)
     @Test
     void filterPostCondtionTest2() {
-        InfiniteIterator<Double> filteringIterator = Iterators.filter(infiniteDoubleIterator2, x -> x % 2 == 0);
+        InfiniteIterator<Double> filteringIterator = Iterators.filter(doubleInfiniteIterator2, x -> x % 2 == 0);
         InfiniteIterator<Double> actualIterator = iterate(2d, x -> x + 2);
         long count = 0;
         while (filteringIterator.hasNext() && count < INFINITE_MAX_TEST) {
@@ -334,7 +333,7 @@ public class IteratorsTest {
     @Test
     void findFirstPostConditionTest2() {
         for (int i = 1; i < 11; i++) {
-            assertEquals(i, findFirst(infiniteIntIterator1, x -> true));
+            assertEquals(i, findFirst(intInfiniteIterator1, x -> true));
         }
     }
 
@@ -358,7 +357,7 @@ public class IteratorsTest {
     void iteratePostCondtionTest() {
         InfiniteIterator<Integer> iterator = iterate(1, x -> x + 1);
         for (int i = 0; i < 100; i++) {
-            assertEquals(iterator.next(), infiniteIntIterator1.next());
+            assertEquals(iterator.next(), intInfiniteIterator1.next());
         }
     }
 
@@ -385,14 +384,16 @@ public class IteratorsTest {
     @DisplayName("limit() PreCondition check 4 / if maxSize negative in InfiniteIterator")
     @Test
     void limitNullCheckTest4() {
-        assertThrows(IllegalArgumentException.class, () -> Iterators.limit(infiniteIntIterator1, -3));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.limit(intInfiniteIterator1, -3));
     }
 
     @DisplayName("limit() PreCondition Check 5 / if maxSize bigger than Iterator size")
     @Test
     void limitNullCheckTest5() {
-        // nothing thrown
-        Iterators.limit(intIterator1, 15);
+        Iterator<Integer> iiterator = Arrays.asList(1).iterator();
+        Iterator<Integer> iterator = Iterators.limit(iiterator, 20);
+        iterator.next();
+        assertThrows(IllegalArgumentException.class, () -> iterator.next());
     }
 
     @DisplayName("limit() PostCondition Check 1 / normal situation / Comsump all tokens next() situation")
@@ -403,7 +404,7 @@ public class IteratorsTest {
         for (int i = 1; i <= maxSize; i++) {
             assertEquals(limit3Iterator.next(), i);
         }
-        assertEquals(null, limit3Iterator.next());
+        assertThrows(NoSuchElementException.class, () -> limit3Iterator.next());
     }
 
     @DisplayName("limit() PostCondition Check 2 / normal situation / Comsump all tokens hasNext() situation")
@@ -421,18 +422,18 @@ public class IteratorsTest {
     @Test
     void limitPostConditionCheck3() {
         long maxSize = 3;
-        Iterator<Integer> limit3Iterator = Iterators.limit(infiniteIntIterator1, maxSize);
+        Iterator<Integer> limit3Iterator = Iterators.limit(intInfiniteIterator1, maxSize);
         for (int i = 1; i <= maxSize; i++) {
             assertEquals(limit3Iterator.next(), i);
         }
-        assertEquals(null, limit3Iterator.next());
+        assertThrows(NoSuchElementException.class, () -> limit3Iterator.next());
     }
 
     @DisplayName("limit() PostCondition Check 4 / normal situation in InfiniteIterator/ Comsump all tokens hasNext() situation")
     @Test
     void limitPostConditionCheck4() {
         long maxSize = 3;
-        Iterator<Integer> limit3Iterator = Iterators.limit(infiniteIntIterator1, maxSize);
+        Iterator<Integer> limit3Iterator = Iterators.limit(intInfiniteIterator1, maxSize);
         for (int i = 1; i <= maxSize; i++) {
             assertEquals(limit3Iterator.next(), i);
         }
@@ -455,9 +456,9 @@ public class IteratorsTest {
     @DisplayName("generate() PostCondition Check1 / ")
     @Test
     void generatePostConditionTest() {
-        infiniteIntIterator1 = generate(IteratorsTest::createNumber);
+        intInfiniteIterator1 = generate(IteratorsTest::createNumber);
         for (int i = 1; i < INFINITE_MAX_TEST; i++) {
-            assertEquals(i, infiniteDoubleIterator1.next());
+            assertEquals(i, doubleInfiniteIterator1.next());
         }
     }
 
@@ -475,12 +476,12 @@ public class IteratorsTest {
     @DisplayName("zip() null check 2 / Overloading zip() to use InfiniteIterator")
     @Test
     void zipNullCheck2() {
-        assertThrows(IllegalArgumentException.class, () -> zip(null, infiniteIntIterator2, infiniteIntIterator2));
-        infiniteIntIterator1 = null;
-        assertThrows(IllegalArgumentException.class, () -> zip((x, y) -> x, infiniteIntIterator1, infiniteIntIterator1));
-        assertThrows(IllegalArgumentException.class, () -> zip((x, y) -> x, infiniteIntIterator1, infiniteIntIterator1));
-        infiniteIntIterator1 = null;
-        assertThrows(IllegalArgumentException.class, () -> zip((x, y) -> x, infiniteIntIterator1, infiniteIntIterator1));
+        assertThrows(IllegalArgumentException.class, () -> zip(null, intInfiniteIterator2, intInfiniteIterator2));
+        intInfiniteIterator1 = null;
+        assertThrows(IllegalArgumentException.class, () -> zip((x, y) -> x, intInfiniteIterator1, intInfiniteIterator1));
+        assertThrows(IllegalArgumentException.class, () -> zip((x, y) -> x, intInfiniteIterator1, intInfiniteIterator1));
+        intInfiniteIterator1 = null;
+        assertThrows(IllegalArgumentException.class, () -> zip((x, y) -> x, intInfiniteIterator1, intInfiniteIterator1));
     }
 
     //Iterators hasNext() must be false after zipping
@@ -500,7 +501,7 @@ public class IteratorsTest {
     @DisplayName("zip() postCondition 3/ params InfiniteIterator, Iterator")
     @Test
     void zipPostConditionTest3() {
-        Iterator<Integer> zipIterator = zip((x, y) -> Math.addExact(x, y), infiniteIntIterator1, intIterator2);
+        Iterator<Integer> zipIterator = zip((x, y) -> Math.addExact(x, y), intInfiniteIterator1, intIterator2);
         for (int i = 1; i <= 10; i++) {
             assertEquals(i * 2, zipIterator.next());
         }
@@ -511,7 +512,7 @@ public class IteratorsTest {
     @DisplayName("zip() postCondition 4/ params Iterator, InfiniteIterator")
     @Test
     void zipPostConditionTest4() {
-        Iterator<Integer> zipIterator = zip((x, y) -> Math.addExact(x, y), intIterator1, infiniteIntIterator2);
+        Iterator<Integer> zipIterator = zip((x, y) -> Math.addExact(x, y), intIterator1, intInfiniteIterator2);
         for (int i = 1; i <= 10; i++) {
             assertEquals(i * 2, zipIterator.next());
         }
@@ -522,7 +523,7 @@ public class IteratorsTest {
     @DisplayName("zip() postCondition 5/ params InfiniteIterator, InfiniteIterator")
     @Test
     void zipPostConditionTest5() {
-        InfiniteIterator<Integer> zipIterator = zip(Math::addExact, infiniteIntIterator1, infiniteIntIterator2);
+        InfiniteIterator<Integer> zipIterator = zip(Math::addExact, intInfiniteIterator1, intInfiniteIterator2);
         for (int i = 1; i <= INFINITE_MAX_TEST; i++) {
             assertEquals(i * 2, zipIterator.next());
         }
@@ -538,8 +539,8 @@ public class IteratorsTest {
     @DisplayName("count() null check 1/ InfiniteIterator null check")
     @Test
     void countNullCheck2() {
-        infiniteIntIterator1 = null;
-        assertThrows(IllegalArgumentException.class, () -> count(infiniteIntIterator1));
+        intInfiniteIterator1 = null;
+        assertThrows(IllegalArgumentException.class, () -> count(intInfiniteIterator1));
     }
 
     @DisplayName("count() PostCondition 1 / Iterator")
@@ -551,24 +552,7 @@ public class IteratorsTest {
     @DisplayName("count() PostCondition 2 / InfiniteInterator")
     @Test
     void countPreConditionCheck1() {
-        assertEquals(Long.MAX_VALUE, count(infiniteIntIterator1));
-    }
-
-    @DisplayName("count() PostCondition 1 / Interator hasNext (always true) overloading")
-    @Test
-    void countPreConditionCheck2() {
-        Iterator<Integer> iterator = new Iterator<Integer>() {
-            @Override
-            public boolean hasNext() {
-                return true;
-            }
-
-            @Override
-            public Integer next() {
-                return 1;
-            }
-        };
-        assertEquals(Long.MAX_VALUE, count(iterator));
+        assertThrows(IllegalArgumentException.class, () -> count(intInfiniteIterator1));
     }
 
     @DisplayName("get() null check 1 / Iterator")
@@ -581,8 +565,8 @@ public class IteratorsTest {
     @DisplayName("get() null check 2 / Iterator")
     @Test
     void getNullCheck2() {
-        infiniteIntIterator1 = null;
-        assertThrows(IllegalArgumentException.class, () -> Iterators.get(infiniteIntIterator1, 3));
+        intInfiniteIterator1 = null;
+        assertThrows(IllegalArgumentException.class, () -> Iterators.get(intInfiniteIterator1, 3));
     }
 
     @DisplayName("get() PreCondition / idx negative iterator")
@@ -594,7 +578,7 @@ public class IteratorsTest {
     @DisplayName("get() PreCondition 1 / idx negative infiniteIterator")
     @Test
     void getPreConditionCheck1() {
-        assertThrows(IllegalArgumentException.class, () -> Iterators.get(infiniteIntIterator1, -4));
+        assertThrows(IllegalArgumentException.class, () -> Iterators.get(intInfiniteIterator1, -4));
     }
 
     @DisplayName("get() PostCondition 1/ Iterator")
@@ -606,7 +590,15 @@ public class IteratorsTest {
     @DisplayName("get() PostCondition 2/ InfiniteIterator")
     @Test
     void getPostCondition2() {
-        assertEquals(4, Iterators.get(infiniteIntIterator1, 3));
+        assertEquals(4, Iterators.get(intInfiniteIterator1, 3));
+    }
+
+    @DisplayName("get() PostCondition 3/ InfiniteIterator")
+    @Test
+    void getPostCondition3() {
+        Iterator<Integer> iterator = Arrays.asList(1, 2).iterator();
+
+        assertThrows(IllegalArgumentException.class, () -> Iterators.get(iterator, 3));
     }
 
     @DisplayName("getLast() nullcheck 1 / iterator")
@@ -620,6 +612,20 @@ public class IteratorsTest {
     @Test
     void getLastPostCondition() {
         assertEquals(10, Iterators.getLast(intIterator1));
+    }
+
+    @DisplayName("getLast() postCondition Test / empty iterator")
+    @Test
+    void getLastPostCondition1() {
+        Iterator<Integer> iterator = Arrays.asList(1).iterator();
+        iterator.next();
+        assertThrows(NoSuchElementException.class, () -> Iterators.getLast(iterator));
+    }
+
+    @DisplayName("getLast() InfiniteIterator check")
+    @Test
+    void getLastInfiniteIteratorTest() {
+        assertThrows(IllegalArgumentException.class, () -> Iterators.getLast(intInfiniteIterator1));
     }
 
     @DisplayName("toList() null check")
@@ -646,9 +652,9 @@ public class IteratorsTest {
         intIterator2 = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).iterator();
         doubleIterator1 = Arrays.asList(1d, 2d, 3d, 4d, 5d, 6d, 7d, 8d, 9d, 10d).iterator();
         doubleIterator2 = Arrays.asList(1d, 2d, 3d, 4d, 5d, 6d, 7d, 8d, 9d, 10d).iterator();
-        infiniteIntIterator1 = iterate(1, x -> x + 1);
-        infiniteIntIterator2 = iterate(1, x -> x + 1);
-        infiniteDoubleIterator1 = iterate(1d, x -> x + 1);
-        infiniteDoubleIterator2 = iterate(1d, x -> x + 1);
+        intInfiniteIterator1 = iterate(1, x -> x + 1);
+        intInfiniteIterator2 = iterate(1, x -> x + 1);
+        doubleInfiniteIterator1 = iterate(1d, x -> x + 1);
+        doubleInfiniteIterator2 = iterate(1d, x -> x + 1);
     }
 }

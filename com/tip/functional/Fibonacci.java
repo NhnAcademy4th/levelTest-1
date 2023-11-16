@@ -1,5 +1,7 @@
 package com.tip.functional;
 
+import com.tip.functional.iterator.InfiniteIterator;
+
 public class Fibonacci implements InfiniteIterator<Integer> {
     // TODO: 채우기
 

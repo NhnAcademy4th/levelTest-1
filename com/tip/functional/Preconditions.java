@@ -1,5 +1,8 @@
 package com.tip.functional;
 
+import com.tip.functional.iterator.InfiniteIterator;
+import java.util.Iterator;
+
 public class Preconditions {
 
     /**
@@ -28,10 +31,20 @@ public class Preconditions {
      * @return the non-null reference that was validated
      * @throws IllegalArgumentException if {@code ts} is null
      */
-    public static <T> T checkNotNull(T ts) {
+    public static <T> T checkNotNull(T ts, String error) {
         if (ts == null)
-            throw new IllegalArgumentException("parameter is null");
+            throw new IllegalArgumentException(error + "is IllegalArguments : null not allowed here");
         return ts;
     }
 
+    public static void checkNotInfiniteIterator(Iterator<?> ts) {
+        if (ts instanceof InfiniteIterator<?>)
+            throw new IllegalArgumentException("InfiniteIterator");
+    }
+
+    public static void checkBothNotInfinitable(Iterator<?> xs, Iterator<?> ys) {
+        if (xs instanceof InfiniteIterator<?> && ys instanceof InfiniteIterator<?>) {
+            throw new IllegalArgumentException("InfiniteIterator");
+        }
+    }
 }
